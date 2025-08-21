@@ -4,15 +4,6 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "outputDirectory": ".next",
-  "env": {
-    "NEXT_PUBLIC_LIVEKIT_URL": "@livekit_url",
-    "LIVEKIT_API_KEY": "@livekit_api_key",
-    "LIVEKIT_API_SECRET": "@livekit_api_secret",
-    "OPENAI_API_KEY": "@openai_api_key",
-    "DEEPGRAM_API_KEY": "@deepgram_api_key",
-    "STRIPE_PUBLISHABLE_KEY": "@stripe_publishable_key",
-    "STRIPE_SECRET_KEY": "@stripe_secret_key"
-  },
   "functions": {
     "app/api/livekit/token/route.ts": {
       "maxDuration": 10
