@@ -1,3 +1,16 @@
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Testing
+/coverage
+
+# Production
+/build
+/.next/
+/out/
+
 # Environment variables
 .env
 .env.local
@@ -24,6 +37,9 @@ ENV/
 # Logs
 *.log
 logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # OS
 .DS_Store
@@ -32,3 +48,10 @@ Thumbs.db
 # LiveKit
 *.jwt
 *.token
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts

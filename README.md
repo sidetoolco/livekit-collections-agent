@@ -1,6 +1,10 @@
-# LiveKit Voice Assistant Agent
+# LiveKit Collections Agent Platform
 
-A production-ready voice assistant agent for LiveKit Cloud that provides real-time conversational AI capabilities with speech recognition, natural language understanding, and text-to-speech.
+AI-powered collections agent with LiveKit voice capabilities and Next.js payment portal.
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsidetoolco%2Flivekit-collections-agent&env=NEXT_PUBLIC_LIVEKIT_URL,LIVEKIT_API_KEY,LIVEKIT_API_SECRET,OPENAI_API_KEY,DEEPGRAM_API_KEY&envDescription=API%20keys%20needed%20for%20collections%20agent&project-name=collections-agent&repository-name=collections-agent)
+
+A production-ready collections platform with AI voice assistant for debt recovery, payment processing, and account management.
 
 ## Features
 
