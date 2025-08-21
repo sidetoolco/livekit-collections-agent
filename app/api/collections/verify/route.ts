@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Mock database - replace with actual database
-const mockAccounts = {
+const mockAccounts: Record<string, any> = {
   '1234': {
     accountNumber: 'ACC-001234',
     customerName: 'John Doe',
