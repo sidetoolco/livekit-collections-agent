@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { PhoneIcon, UserIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
+import { PhoneIcon, UserIcon, CurrencyDollarIcon, CalendarIcon } from '@heroicons/react/24/outline';
 import toast, { Toaster } from 'react-hot-toast';
 
 export default function Home() {
@@ -10,8 +10,7 @@ export default function Home() {
     phoneNumber: '',
     customerName: '',
     amountOwed: '',
-    accountNumber: '',
-    daysOverdue: '30',
+    paymentDueDate: '',
   });
   const [activeCall, setActiveCall] = useState<any>(null);
 
@@ -29,8 +28,8 @@ export default function Home() {
 
   const initiateCall = async () => {
     // Validate inputs
-    if (!callData.phoneNumber || !callData.customerName || !callData.amountOwed) {
-      toast.error('Please fill in all required fields');
+    if (!callData.phoneNumber || !callData.customerName || !callData.amountOwed || !callData.paymentDueDate) {
+      toast.error('Please fill in all fields');
       return;
     }
 
@@ -45,8 +44,7 @@ export default function Home() {
           phoneNumber: callData.phoneNumber.replace(/\D/g, ''), // Remove formatting
           customerName: callData.customerName,
           amountOwed: parseFloat(callData.amountOwed),
-          accountNumber: callData.accountNumber || `ACC-${Date.now()}`,
-          daysOverdue: parseInt(callData.daysOverdue),
+          paymentDueDate: callData.paymentDueDate,
         }),
       });
 
@@ -60,8 +58,7 @@ export default function Home() {
           phoneNumber: '',
           customerName: '',
           amountOwed: '',
-          accountNumber: '',
-          daysOverdue: '30',
+          paymentDueDate: '',
         });
       } else {
         toast.error('Failed to initiate call');
@@ -73,6 +70,9 @@ export default function Home() {
       setIsLoading(false);
     }
   };
+
+  // Get today's date in YYYY-MM-DD format for min date
+  const today = new Date().toISOString().split('T')[0];
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
@@ -101,7 +101,7 @@ export default function Home() {
               <div>
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                   <PhoneIcon className="h-4 w-4" />
-                  Phone Number *
+                  Phone Number
                 </label>
                 <input
                   type="tel"
@@ -117,7 +117,7 @@ export default function Home() {
               <div>
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                   <UserIcon className="h-4 w-4" />
-                  Customer Name *
+                  Customer Name
                 </label>
                 <input
                   type="text"
@@ -132,7 +132,7 @@ export default function Home() {
               <div>
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                   <CurrencyDollarIcon className="h-4 w-4" />
-                  Amount Owed *
+                  Amount Owed
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-3 text-gray-500">$</span>
@@ -148,36 +148,19 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Account Number (Optional) */}
+              {/* Payment Due Date */}
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">
-                  Account Number (Optional)
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                  <CalendarIcon className="h-4 w-4" />
+                  Payment Due Date
                 </label>
                 <input
-                  type="text"
-                  value={callData.accountNumber}
-                  onChange={(e) => setCallData({ ...callData, accountNumber: e.target.value })}
-                  placeholder="ACC-001234"
+                  type="date"
+                  value={callData.paymentDueDate}
+                  onChange={(e) => setCallData({ ...callData, paymentDueDate: e.target.value })}
+                  min={today}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
-              </div>
-
-              {/* Days Overdue */}
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">
-                  Days Overdue
-                </label>
-                <select
-                  value={callData.daysOverdue}
-                  onChange={(e) => setCallData({ ...callData, daysOverdue: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="0">Current</option>
-                  <option value="30">30 days</option>
-                  <option value="60">60 days</option>
-                  <option value="90">90 days</option>
-                  <option value="120">120+ days</option>
-                </select>
               </div>
 
               {/* Call Button */}
@@ -207,7 +190,7 @@ export default function Home() {
             {/* Info Box */}
             <div className="mt-6 p-4 bg-blue-50 rounded-lg">
               <p className="text-sm text-blue-800">
-                <strong>How it works:</strong> The AI agent will call the customer and professionally discuss the outstanding balance, offer payment options, and attempt to secure a payment arrangement.
+                <strong>How it works:</strong> The AI agent will call the customer to discuss their payment due on the specified date and attempt to secure a commitment.
               </p>
             </div>
           </div>
@@ -232,8 +215,12 @@ export default function Home() {
                   <span>{activeCall.customerName}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Phone:</span>
-                  <span>{activeCall.phoneNumber}</span>
+                  <span className="text-gray-600">Amount:</span>
+                  <span>${activeCall.amountOwed}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Due Date:</span>
+                  <span>{new Date(activeCall.paymentDueDate).toLocaleDateString()}</span>
                 </div>
               </div>
             </div>
@@ -244,19 +231,19 @@ export default function Home() {
             <div className="bg-white/10 backdrop-blur rounded-lg p-4 text-white">
               <h3 className="font-semibold mb-2">FDCPA Compliant</h3>
               <p className="text-sm text-gray-300">
-                Fully compliant with debt collection regulations
+                Professional, compliant collection practices
               </p>
             </div>
             <div className="bg-white/10 backdrop-blur rounded-lg p-4 text-white">
               <h3 className="font-semibold mb-2">AI-Powered</h3>
               <p className="text-sm text-gray-300">
-                Natural conversations with GPT-4 intelligence
+                Natural conversations with GPT-4
               </p>
             </div>
             <div className="bg-white/10 backdrop-blur rounded-lg p-4 text-white">
-              <h3 className="font-semibold mb-2">Real-time Tracking</h3>
+              <h3 className="font-semibold mb-2">Real-time</h3>
               <p className="text-sm text-gray-300">
-                Monitor call progress and outcomes live
+                Monitor call progress live
               </p>
             </div>
           </div>

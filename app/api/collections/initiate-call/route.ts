@@ -3,12 +3,12 @@ import { RoomServiceClient } from 'livekit-server-sdk';
 
 export async function POST(request: NextRequest) {
   try {
-    const { phoneNumber, customerName, amountOwed, accountNumber, daysOverdue } = await request.json();
+    const { phoneNumber, customerName, amountOwed, paymentDueDate } = await request.json();
 
     // Validate required fields
-    if (!phoneNumber || !customerName || !amountOwed) {
+    if (!phoneNumber || !customerName || !amountOwed || !paymentDueDate) {
       return NextResponse.json(
-        { error: 'Phone number, customer name, and amount are required' },
+        { error: 'All fields are required' },
         { status: 400 }
       );
     }
@@ -32,8 +32,7 @@ export async function POST(request: NextRequest) {
         phoneNumber,
         customerName,
         amountOwed,
-        accountNumber: accountNumber || `ACC-${Date.now()}`,
-        daysOverdue: daysOverdue || 30,
+        paymentDueDate,
         callType: 'outbound_collection',
         initiatedAt: new Date().toISOString(),
       }),
@@ -51,7 +50,7 @@ export async function POST(request: NextRequest) {
       phoneNumber,
       customerName,
       amountOwed,
-      accountNumber: accountNumber || `ACC-${Date.now()}`,
+      paymentDueDate,
       status: 'initiating',
       message: 'Call is being connected. Agent will join automatically.',
     };

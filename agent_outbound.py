@@ -132,31 +132,35 @@ async def entrypoint(ctx: JobContext):
         "phoneNumber": metadata.get("phoneNumber", "Unknown"),
         "customerName": metadata.get("customerName", "Customer"),
         "amountOwed": float(metadata.get("amountOwed", 0)),
-        "accountNumber": metadata.get("accountNumber", "Unknown"),
-        "daysOverdue": int(metadata.get("daysOverdue", 30))
+        "paymentDueDate": metadata.get("paymentDueDate", datetime.now().strftime("%Y-%m-%d"))
     }
     
     logger.info(f"Initiating outbound call to {customer_info['phoneNumber']} for {customer_info['customerName']}")
     
     # Create system prompt based on customer info
+    # Calculate days until payment due
+    due_date = datetime.strptime(customer_info['paymentDueDate'], "%Y-%m-%d")
+    today = datetime.now()
+    days_until_due = (due_date - today).days
+    
     system_prompt = f"""You are a professional debt collection agent making an outbound call.
     
     Customer Information:
     - Name: {customer_info['customerName']}
     - Amount Owed: ${customer_info['amountOwed']:.2f}
-    - Days Overdue: {customer_info['daysOverdue']} days
-    - Account: {customer_info['accountNumber']}
+    - Payment Due Date: {customer_info['paymentDueDate']} ({days_until_due} days from now)
     
     Your objectives:
     1. Confirm you're speaking with {customer_info['customerName']}
-    2. Inform them about the outstanding balance
-    3. Understand their situation with empathy
-    4. Offer flexible payment options
-    5. Secure a payment commitment or arrangement
-    6. If unable to pay, schedule a follow-up
+    2. Remind them about the payment of ${customer_info['amountOwed']:.2f} due on {customer_info['paymentDueDate']}
+    3. Understand their ability to make the payment on time
+    4. If they can't pay by the due date, offer alternative arrangements
+    5. Secure a firm commitment for payment
+    6. If unable to commit, understand why and schedule follow-up
     
     Guidelines:
     - Be professional but empathetic
+    - Focus on the upcoming due date
     - Never threaten or use aggressive language
     - Comply with FDCPA regulations
     - Listen to their situation before offering solutions
@@ -216,8 +220,8 @@ async def entrypoint(ctx: JobContext):
     
     # Initial greeting
     await assistant.say(
-        f"Hello, this is Sarah calling from Financial Services regarding your account ending in "
-        f"{customer_info['accountNumber'][-4:] if len(customer_info['accountNumber']) > 4 else customer_info['accountNumber']}. "
+        f"Hello, this is Sarah calling from Financial Services regarding your upcoming payment of "
+        f"${customer_info['amountOwed']:.2f} due on {customer_info['paymentDueDate']}. "
         f"May I please speak with {customer_info['customerName']}?",
         allow_interruptions=True
     )
