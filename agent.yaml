@@ -1,0 +1,46 @@
+# LiveKit Agent Configuration
+apiVersion: v1
+kind: Agent
+metadata:
+  name: sidetool-voice-assistant
+  description: AI-powered voice assistant for customer service
+
+# Agent runtime configuration
+runtime:
+  language: python
+  version: "3.11"
+  
+# Entry point for the agent
+entrypoint: agent:entrypoint
+
+# Environment variables (production values should be set in LiveKit Cloud)
+env:
+  LOG_LEVEL: INFO
+  
+# Resource requirements
+resources:
+  cpu: "1"
+  memory: "2Gi"
+  
+# Scaling configuration
+scaling:
+  min_instances: 1
+  max_instances: 10
+  target_concurrent_sessions: 5
+  
+# Health check configuration
+health_check:
+  enabled: true
+  interval: 30s
+  timeout: 5s
+  
+# Session configuration
+session:
+  max_duration: 3600s  # 1 hour max session
+  idle_timeout: 300s   # 5 minutes idle timeout
+  
+# LiveKit Cloud specific settings
+livekit_cloud:
+  region: auto  # Automatically select best region
+  enable_metrics: true
+  enable_logs: true
