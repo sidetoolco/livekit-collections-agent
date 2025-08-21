@@ -1,66 +1,264 @@
-import Link from 'next/link';
+'use client';
+
+import { useState } from 'react';
+import { PhoneIcon, UserIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function Home() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [callData, setCallData] = useState({
+    phoneNumber: '',
+    customerName: '',
+    amountOwed: '',
+    accountNumber: '',
+    daysOverdue: '30',
+  });
+  const [activeCall, setActiveCall] = useState<any>(null);
+
+  const formatPhoneNumber = (value: string) => {
+    const phone = value.replace(/\D/g, '');
+    if (phone.length <= 3) return phone;
+    if (phone.length <= 6) return `(${phone.slice(0, 3)}) ${phone.slice(3)}`;
+    return `(${phone.slice(0, 3)}) ${phone.slice(3, 6)}-${phone.slice(6, 10)}`;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setCallData({ ...callData, phoneNumber: formatted });
+  };
+
+  const initiateCall = async () => {
+    // Validate inputs
+    if (!callData.phoneNumber || !callData.customerName || !callData.amountOwed) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Call API to initiate outbound call
+      const response = await fetch('/api/collections/initiate-call', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phoneNumber: callData.phoneNumber.replace(/\D/g, ''), // Remove formatting
+          customerName: callData.customerName,
+          amountOwed: parseFloat(callData.amountOwed),
+          accountNumber: callData.accountNumber || `ACC-${Date.now()}`,
+          daysOverdue: parseInt(callData.daysOverdue),
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setActiveCall(result);
+        toast.success(`Call initiated to ${callData.phoneNumber}`);
+        
+        // Clear form
+        setCallData({
+          phoneNumber: '',
+          customerName: '',
+          amountOwed: '',
+          accountNumber: '',
+          daysOverdue: '30',
+        });
+      } else {
+        toast.error('Failed to initiate call');
+      }
+    } catch (error) {
+      console.error('Error initiating call:', error);
+      toast.error('Error initiating call');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            AI-Powered Collections Portal
-          </h1>
-          <p className="text-xl text-gray-600 mb-8">
-            Resolve your outstanding balance with our intelligent payment assistant
-          </p>
-          
-          <div className="grid md:grid-cols-3 gap-6 mt-12">
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="text-blue-600 mb-4">
-                <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
+    <main className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
+      <Toaster position="top-right" />
+      
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-2xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-10">
+            <h1 className="text-4xl font-bold text-white mb-3">
+              Collections Call Center
+            </h1>
+            <p className="text-gray-400">
+              AI-powered outbound collections agent
+            </p>
+          </div>
+
+          {/* Main Card */}
+          <div className="bg-white rounded-2xl shadow-2xl p-8">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+              Initiate Collection Call
+            </h2>
+
+            <div className="space-y-5">
+              {/* Phone Number */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                  <PhoneIcon className="h-4 w-4" />
+                  Phone Number *
+                </label>
+                <input
+                  type="tel"
+                  value={callData.phoneNumber}
+                  onChange={handlePhoneChange}
+                  placeholder="(555) 123-4567"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  maxLength={14}
+                />
               </div>
-              <h3 className="text-lg font-semibold mb-2">AI Voice Assistant</h3>
-              <p className="text-gray-600 text-sm">
-                Speak with our intelligent agent to discuss payment options
-              </p>
+
+              {/* Customer Name */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                  <UserIcon className="h-4 w-4" />
+                  Customer Name *
+                </label>
+                <input
+                  type="text"
+                  value={callData.customerName}
+                  onChange={(e) => setCallData({ ...callData, customerName: e.target.value })}
+                  placeholder="John Doe"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Amount Owed */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                  <CurrencyDollarIcon className="h-4 w-4" />
+                  Amount Owed *
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-3 text-gray-500">$</span>
+                  <input
+                    type="number"
+                    value={callData.amountOwed}
+                    onChange={(e) => setCallData({ ...callData, amountOwed: e.target.value })}
+                    placeholder="2,500.00"
+                    className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    step="0.01"
+                    min="0"
+                  />
+                </div>
+              </div>
+
+              {/* Account Number (Optional) */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Account Number (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={callData.accountNumber}
+                  onChange={(e) => setCallData({ ...callData, accountNumber: e.target.value })}
+                  placeholder="ACC-001234"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Days Overdue */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Days Overdue
+                </label>
+                <select
+                  value={callData.daysOverdue}
+                  onChange={(e) => setCallData({ ...callData, daysOverdue: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="0">Current</option>
+                  <option value="30">30 days</option>
+                  <option value="60">60 days</option>
+                  <option value="90">90 days</option>
+                  <option value="120">120+ days</option>
+                </select>
+              </div>
+
+              {/* Call Button */}
+              <button
+                onClick={initiateCall}
+                disabled={isLoading}
+                className={`w-full py-4 px-6 rounded-lg font-semibold text-white transition-all duration-200 flex items-center justify-center gap-3 ${
+                  isLoading
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-green-600 hover:bg-green-700 hover:shadow-lg'
+                }`}
+              >
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Initiating Call...
+                  </>
+                ) : (
+                  <>
+                    <PhoneIcon className="h-5 w-5" />
+                    Start Collection Call
+                  </>
+                )}
+              </button>
             </div>
-            
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="text-green-600 mb-4">
-                <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Secure Payments</h3>
-              <p className="text-gray-600 text-sm">
-                Multiple payment methods with bank-level encryption
-              </p>
-            </div>
-            
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="text-purple-600 mb-4">
-                <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Flexible Plans</h3>
-              <p className="text-gray-600 text-sm">
-                Customized payment arrangements that fit your budget
+
+            {/* Info Box */}
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>How it works:</strong> The AI agent will call the customer and professionally discuss the outstanding balance, offer payment options, and attempt to secure a payment arrangement.
               </p>
             </div>
           </div>
-          
-          <div className="mt-12">
-            <Link
-              href="/collections"
-              className="inline-block bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition duration-200"
-            >
-              Access Your Account
-            </Link>
-          </div>
-          
-          <div className="mt-8 text-sm text-gray-500">
-            <p>Available 24/7 | FDCPA Compliant | PCI DSS Certified</p>
+
+          {/* Active Calls Section */}
+          {activeCall && (
+            <div className="mt-6 bg-white rounded-xl shadow-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">Active Call</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Call ID:</span>
+                  <span className="font-mono text-sm">{activeCall.callId}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Status:</span>
+                  <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+                    {activeCall.status || 'Connecting...'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Customer:</span>
+                  <span>{activeCall.customerName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Phone:</span>
+                  <span>{activeCall.phoneNumber}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Features */}
+          <div className="mt-10 grid md:grid-cols-3 gap-4">
+            <div className="bg-white/10 backdrop-blur rounded-lg p-4 text-white">
+              <h3 className="font-semibold mb-2">FDCPA Compliant</h3>
+              <p className="text-sm text-gray-300">
+                Fully compliant with debt collection regulations
+              </p>
+            </div>
+            <div className="bg-white/10 backdrop-blur rounded-lg p-4 text-white">
+              <h3 className="font-semibold mb-2">AI-Powered</h3>
+              <p className="text-sm text-gray-300">
+                Natural conversations with GPT-4 intelligence
+              </p>
+            </div>
+            <div className="bg-white/10 backdrop-blur rounded-lg p-4 text-white">
+              <h3 className="font-semibold mb-2">Real-time Tracking</h3>
+              <p className="text-sm text-gray-300">
+                Monitor call progress and outcomes live
+              </p>
+            </div>
           </div>
         </div>
       </div>
