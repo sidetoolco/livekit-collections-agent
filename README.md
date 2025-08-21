@@ -39,12 +39,12 @@ pip install -r requirements.txt
 Update the `.env` file with your credentials:
 
 ```env
-LIVEKIT_URL=wss://sidetool-lavdxo0f.livekit.cloud
-LIVEKIT_API_KEY=APIondoXCavRYQd
-LIVEKIT_API_SECRET=your_secret_here  # Get from LiveKit Cloud dashboard
+LIVEKIT_URL=[your-livekit-url]
+LIVEKIT_API_KEY=[your-livekit-api-key]
+LIVEKIT_API_SECRET=[your-livekit-secret]  # Get from LiveKit Cloud dashboard
 
-OPENAI_API_KEY=sk-...  # Your OpenAI API key
-DEEPGRAM_API_KEY=...   # Your Deepgram API key
+OPENAI_API_KEY=[your-openai-api-key]  # Your OpenAI API key
+DEEPGRAM_API_KEY=[your-deepgram-api-key]   # Your Deepgram API key
 ```
 
 ### 3. Test Locally
@@ -115,8 +115,8 @@ lk agent delete sidetool-voice-assistant
 3. Generate a token:
    ```bash
    lk token create \
-     --api-key APIondoXCavRYQd \
-     --api-secret your_secret_here \
+     --api-key [your-api-key] \
+     --api-secret [your-api-secret] \
      --join --room test_room --identity user1 \
      --valid-for 24h
    ```
@@ -128,9 +128,9 @@ lk agent delete sidetool-voice-assistant
 ```bash
 # Join as a test participant with demo video
 lk room join \
-  --url wss://sidetool-lavdxo0f.livekit.cloud \
-  --api-key APIondoXCavRYQd \
-  --api-secret your_secret_here \
+  --url [your-livekit-url] \
+  --api-key [your-api-key] \
+  --api-secret [your-api-secret] \
   --room test_room \
   --identity cli_user \
   --publish-demo
